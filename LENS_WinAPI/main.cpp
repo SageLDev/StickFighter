@@ -11,10 +11,10 @@ using namespace Gdiplus;
 
 //Variables constantes
 /* Variable constante para calcular el ancho de la ventana */
-const int ANCHO_VENTANA = 800;
+const int ANCHO_VENTANA = 1280;
 
 /* Variable constante para calcular el alto de la ventana */
-const int ALTO_VENTANA = 600;
+const int ALTO_VENTANA = 720;
 
 /* Variable constante que define la cantidad de bytes por pixel, usada en las operaciones de desplegar sprites/imagenes en pantalla */
 const int BPP = 4;
@@ -83,7 +83,7 @@ bool mirror;
 bool loboD=TRUE;
 bool lobomirror = FALSE;
 int start;
-int scale = 1;
+int scale = 7;
 
 
 
@@ -240,8 +240,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	*/
 void Init() 
 {
-	posPer.X = 20;
-	posPer.Y = 50;
+	posPer.X = 305;
+	posPer.Y = 115;
 	/*initfondo = 0;*/
 
 	posLob.X = 20;
@@ -260,8 +260,8 @@ void Init()
 
 	//Inicializar el puntero tipo unsigned char 'ptrBack' que contiene la direccion inicial en memoria del arreglo de pixeles de la imagen especificada en el primer parametro
 	//y en la variable dmnBack de tipo DIMENSION* estan los valores de ANCHO y ALTO de la imagen.
-	ptrBack = CargaImagen(TEXT("color.png"), &dmnBack); //puntero a la imagen
-	ptrPersonaje = CargaImagen(TEXT("personaje.png"), &dmnPersonaje);   //puntero a mi personaje sprite
+	ptrBack = CargaImagen(TEXT("./Stages/stage_roof.png"), &dmnBack); //puntero a la imagen
+	ptrPersonaje = CargaImagen(TEXT("./Animations/animation_forward.png"), &dmnPersonaje);   //puntero a mi personaje sprite
 	ptrLobo = CargaImagen(TEXT("lobo.png"), &dmnLobo);
 	ptrpelota = CargaImagen(TEXT("pelotita.png"),&dmnPelota);
 }
@@ -314,13 +314,13 @@ void KeysEvents()
 		mirror = FALSE;
 		indiPersonaje++;
 		indiPersonaje = indiPersonaje >= 6 ? 0 : indiPersonaje;
-		if (posPer.X < 590)   //para que tope en mi ventana de 800 del lado derecho
+		if (posPer.X < 1200)   //para que tope en mi ventana de 800 del lado derecho
 		{
-			posPer.X += 10;
+			posPer.X += 30;
 		}
 		else
 		{
-			if (increfondo < 1200)  //para que tope en mi imagen 2048
+			if (increfondo < 100)  //para que tope en mi imagen 2048
 			{
 				increfondo += 10;  //velocidad en que avanza
 			}
@@ -331,9 +331,9 @@ void KeysEvents()
 		mirror = TRUE;
 		indiPersonaje++;
 		indiPersonaje = indiPersonaje >= 6 ? 0 : indiPersonaje;
-		if (posPer.X > 10)  //para que tope en mi ventana de 800 del lado izquierdo
+		if (posPer.X > 150)  //para que tope en mi ventana de 800 del lado izquierdo
 		{
-			posPer.X -= 10;
+			posPer.X -= 30;
 		}
 		else
 		{
@@ -473,7 +473,7 @@ void DibujaFondo(int * buffer, int * imagen, DIMENSION dmn, int incremento) {
 			add edi, BPP                     //incremento mi pixel 4 bytes
 			add esi, BPP
 			loop PonerL
-			mov eax, 2048                    //ancho de mi imagen
+			mov eax, 1424                    //ancho de mi imagen
 			mul BPP                          //multiplico por 4 bytes
 			add esi, eax                     //incremento para que me pase a la linea de abajo
 			mov eax, ANCHO_VENTANA
@@ -541,7 +541,7 @@ void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
 					add edi, 769000
 
 
-					mov eax, 59   //porque es la cantidad de pixeles de cada cuadrito
+					mov eax, 48   //porque es la cantidad de pixeles de cada cuadrito
 					mul BPP
 					mul indiPersonaje    //para moverlo con la tecla que asigne, si le pico una ves el 0 default se convierte en uno, de multiplica por 59 y se mueve el sprite
 					add esi, eax
@@ -553,7 +553,7 @@ void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
 					mov ecx, scale
 					repite :
 				push ecx
-					mov ecx, 59
+					mov ecx, 48
 					mostrar :
 					mov eax, [esi]         //mi imagen la paso a eax
 					cmp eax, 0FFFF0000h    //comparo lo rojo 
@@ -577,7 +577,7 @@ void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
 					mov eax, ANCHO_VENTANA
 					mul BPP
 					add edi, eax
-					MOV EAX, 59
+					MOV EAX, 48
 					MUL BPP
 					sub esi, eax
 					mul scale
@@ -614,7 +614,7 @@ void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
 				add edi, 769000
 
 
-				mov eax, 59   //porque es la cantidad de pixeles de cada cuadrito
+				mov eax, 48   //porque es la cantidad de pixeles de cada cuadrito
 				mul BPP
 				mul indiPersonaje    //para moverlo con la tecla que asigne, si le pico una ves el 0 default se convierte en uno, de multiplica por 59 y se mueve el sprite
 				add esi, eax
@@ -626,7 +626,7 @@ void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
 					mov ecx, scale
 					repite2 :
 				push ecx
-					mov ecx, 59
+					mov ecx, 48
 					mostrar2 :
 					mov eax, [esi]
 					cmp eax, 0FFFF0000h
@@ -650,7 +650,7 @@ void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
 					mov eax, ANCHO_VENTANA
 					mul BPP
 					add edi, eax
-					MOV EAX, 59
+					MOV EAX, 48
 					MUL BPP
 					add esi, eax
 					mul scale
