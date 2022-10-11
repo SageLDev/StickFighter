@@ -64,15 +64,11 @@ struct Input
 int *ptrBuffer;
 unsigned char * ptrBack;
 unsigned char * ptrPersonaje;
-unsigned char * ptrLobo;
-unsigned char * ptrpelota;
-DIMENSION dmnBack, dmnPersonaje, dmnLobo,dmnPelota;
+unsigned char * ptrHud;
+DIMENSION dmnBack, dmnPersonaje, dmnHud;
 POSITION posPer;
-POSITION posLob;
-POSITION posPel;
+POSITION posHud;
 int indiPersonaje = 1;
-int indiLobo = 1;
-int indiPelota=1;
 int initfondo;
 bool KEYS[256];
 int increfondo = 0;    //que incremente el valor del pixel 
@@ -80,8 +76,6 @@ int contadorsh = 10;
 
 int coloresdif = 0;
 bool mirror;
-bool loboD=TRUE;
-bool lobomirror = FALSE;
 int start;
 int scale = 7;
 
@@ -98,8 +92,7 @@ unsigned char * CargaImagen(WCHAR rutaImagen[], DIMENSION * dmn);
 POSITION setPosition(int x, int y);
 void DibujaFondo(int *buffer, int *imagen, DIMENSION dmn, int incremento);
 void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn1, POSITION pos1);
-void DibujaLobo(int *buffer, int *lobo, DIMENSION dmn2, POSITION pos2);
-void DibujaPelota(int *buffer, int *pelota, DIMENSION dmn3, POSITION pos3);
+void DibujaInterfaz(int *buffer, int *hud, DIMENSION dmn4, POSITION pos4);
 
 int WINAPI wWinMain(HINSTANCE hInstance, 
 					 HINSTANCE hPrevInstance, 
@@ -244,11 +237,8 @@ void Init()
 	posPer.Y = 115;
 	/*initfondo = 0;*/
 
-	posLob.X = 20;
-	posLob.Y = 50;
-
-	posPel.X = 20;
-	posPel.Y = 50;
+	posHud.X = 25;
+	posHud.Y = 50;
 
 	for(int i = 0; i < 256; i++)
 	{
@@ -262,8 +252,7 @@ void Init()
 	//y en la variable dmnBack de tipo DIMENSION* estan los valores de ANCHO y ALTO de la imagen.
 	ptrBack = CargaImagen(TEXT("./Stages/stage_roof.png"), &dmnBack); //puntero a la imagen
 	ptrPersonaje = CargaImagen(TEXT("./Animations/animation_forward.png"), &dmnPersonaje);   //puntero a mi personaje sprite
-	ptrLobo = CargaImagen(TEXT("lobo.png"), &dmnLobo);
-	ptrpelota = CargaImagen(TEXT("pelotita.png"),&dmnPelota);
+	ptrHud = CargaImagen(TEXT("./HUD/hud_life.png"), &dmnHud);
 }
 
 /* Funcion principal. Encargada de hacer el redibujado en pantalla cada intervalo (o "tick") del timer que se haya creado.
@@ -277,9 +266,7 @@ void MainRender(HWND hWnd)
 
 	DibujaPersonaje(ptrBuffer, (int*)ptrPersonaje, dmnPersonaje,posPer);
 
-	DibujaLobo(ptrBuffer, (int*)ptrLobo, dmnLobo, posLob);
-
-	DibujaPelota(ptrBuffer, (int*)ptrpelota, dmnPelota, posPel);
+	DibujaInterfaz(ptrBuffer, (int*)ptrHud, dmnHud, posHud);
 
 	//Funciones que deberan estar el final de la funcion de Render.
 	InvalidateRect(hWnd, NULL, FALSE);
@@ -343,12 +330,6 @@ void KeysEvents()
 			}
 		}
 	}
-	if (KEYS[input.Space]){
-		indiPelota++;
-		if (indiPelota > 3) {
-			indiPelota = 0;
-		}
-	}
 	if (KEYS[input.R])
 	{
 		coloresdif = RED;
@@ -366,27 +347,6 @@ void KeysEvents()
 		coloresdif = 0;
 	}
 
-	indiLobo++;
-	indiLobo = indiLobo >= 4 ? 0 : indiLobo;
-	if (loboD==TRUE) {
-		lobomirror = FALSE;
-		posLob.X += 5;
-		contadorsh++;
-		if (contadorsh == 50) {
-			loboD = FALSE;
-		}
-	}
-	else {
-		if (loboD == FALSE) {
-			lobomirror = TRUE;
-			posLob.X -= 5;
-			contadorsh--;
-			if (contadorsh == 5) {
-				loboD = TRUE;
-			}
-		}
-		
-	}
 }
 
 /* Funcion para cargar imagenes y obtener un puntero al area de memoria reservada para la misma.
@@ -510,6 +470,79 @@ void DibujaFondo(int * buffer, int * imagen, DIMENSION dmn, int incremento) {
 		//	; mov ecx, eax
 		//;poner codigo para el bucle de leer pixel por pixel y transferirlo al buffer.
 	}
+}
+
+void DibujaInterfaz(int* buffer, int* hud, DIMENSION dmn, POSITION pos)
+{
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+
 }
 
 void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
@@ -666,421 +699,6 @@ void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
 			}
 		}
 	
-}
-
-void DibujaLobo(int *buffer, int *lobo, DIMENSION dmn, POSITION pos)
-{
-	int w = dmn.ANCHO;
-	int h = dmn.ALTO;
-	int x = posLob.X;
-	int y = posLob.Y;
-	if (lobomirror == FALSE) {
-	__asm {
-		cld
-
-		mov esi, lobo
-		mov edi, buffer
-
-		//posicionar mi sprite		
-		mov eax, y
-		mov ebx, 9200
-		mul ebx
-		add edi, eax
-
-		mov eax, x
-		mul BPP
-		add edi, eax
-
-		add edi, 680000
-
-
-		mov eax, 48        //porque es la cantidad de pixeles de cada cuadrito
-		mul BPP
-		mul  indiLobo
-		add esi, eax
-
-		xor ecx, ecx
-		mov ecx, h    //asigno mi altura a ecx
-
-		repetir :
-		push ecx     //guardo en mi pila ecx
-			mov ecx, 48
-
-			//PARA QUITAR EL FONDO ROJO
-			muestra :
-			mov eax, [esi]         //mi imagen la paso a eax
-			cmp eax, 0FFFF0000h    //comparo lo rojo 
-			je color1   //si es igual salta a color1
-			/*or eax, coloresdif*/
-			mov[edi], eax
-			color1 :
-		add esi, BPP   //incrementa y pasa el pixel rojo
-			add edi, BPP
-			loop muestra
-
-			//suma el total para luego restar y posicionarlo en la linea de abajo         
-			mov eax, ANCHO_VENTANA
-			mul BPP
-
-			add edi, eax
-			mov eax, 48
-			mul BPP
-			sub edi, eax
-
-			//MUEVE EL PUNTERO A LA SIGUIENTE LINEA DE LA IMAGEN PARA SEGUIR DIBUJANDO
-			mov eax, w
-			mul BPP
-
-			add esi, eax
-			mov eax, 48
-			mul BPP
-			sub esi, eax
-
-			pop ecx
-			loop repetir
-		}
-	}
-	else {
-		__asm {
-			cld
-
-			mov esi, lobo
-			mov edi, buffer
-
-			//posicionar mi sprite		
-			mov eax, y
-			mov ebx, 9200
-			mul ebx
-			add edi, eax
-
-			mov eax, x
-			mul BPP
-			add edi, eax
-
-			add edi, 680000
-
-
-			mov eax, 48        //porque es la cantidad de pixeles de cada cuadrito
-			mul BPP
-			mul  indiLobo
-			sub esi, eax
-
-			xor ecx, ecx
-			mov ecx, h    //asigno mi altura a ecx
-
-			repetir2 :
-			push ecx     //guardo en mi pila ecx
-				mov ecx, 48
-
-				//PARA QUITAR EL FONDO ROJO
-				muestra2 :
-				mov eax, [esi]         //mi imagen la paso a eax
-				cmp eax, 0FFFF0000h    //comparo lo rojo 
-				je color2   //si es igual salta a color1
-							/*or eax, coloresdif*/
-				mov[edi], eax
-				color2 :
-			    sub esi, BPP   //incrementa y pasa el pixel rojo
-				add edi, BPP
-				loop muestra2
-
-				//suma el total para luego restar y posicionarlo en la linea de abajo         
-				mov eax, ANCHO_VENTANA
-				mul BPP
-
-				add edi, eax
-				mov eax, 48
-				mul BPP
-				sub edi, eax
-
-				//MUEVE EL PUNTERO A LA SIGUIENTE LINEA DE LA IMAGEN PARA SEGUIR DIBUJANDO
-				mov eax, w
-				mul BPP
-
-				add esi, eax
-				mov eax, 48
-				mul BPP
-				add esi, eax
-
-				pop ecx
-				loop repetir2
-		}
-	}
-}
-
-void DibujaPelota(int * buffer, int * pelota, DIMENSION dmn3, POSITION pos3)
-{
-	int w = dmn3.ANCHO;
-	int h = dmn3.ALTO-1;
-	int posX = pos3.X;
-	int posY = pos3.Y;
-	int total = 0;
-	int total2 = 0;
-
-	if (indiPelota == 0) {
-		indiPelota++;
-		__asm
-		{
-			cld
-			mov esi, pelota
-			mov edi, buffer
-
-			mov eax, posX
-			mul BPP
-			add edi, eax
-			mov eax, ANCHO_VENTANA
-			mul BPP
-			mul posY
-			add edi, eax
-
-			mov eax, w
-			mul BPP
-			add esi, eax
-
-			xor ecx, ecx
-			mov ecx, h
-
-			repite2 :
-
-			push ecx
-				mov ecx, w
-
-
-				mostrar2 :
-				mov eax, [esi]
-				cmp eax, 0FFED1C24h
-				je Color2
-				mov[edi], eax
-
-
-				Color2 :
-
-				add esi, BPP
-				add edi, BPP
-
-
-				loop mostrar2
-				mov eax, ANCHO_VENTANA
-				mul BPP
-
-				add edi, eax
-				MOV EAX, w
-				MUL BPP
-				SUB EDI, EAX
-
-				mov eax, w
-				mul BPP
-
-				add esi, eax
-				mov eax, w
-				mul BPP
-				sub esi, eax
-
-
-
-				pop ecx
-
-				loop repite2
-		}
-	}else if(indiPelota==1){
-		indiPelota++;
-		__asm{
-		cld
-
-			mov esi, pelota
-			mov edi, buffer
-
-			
-			mov eax, w
-			mul BPP
-			mul h
-			add esi, eax
-			mov total, esi
-
-			mov eax, posX
-			mul BPP
-			add edi, eax
-			mov eax, ANCHO_VENTANA
-			mul BPP
-			mul posY
-			add edi, eax
-
-			xor ecx, ecx
-			mov ecx, w
-
-
-			repite :
-
-		push ecx
-			mov ecx, h
-
-
-			mostrar :
-
-		mov eax, w
-			mul BPP
-			sub esi, eax
-			cmp[esi], 0FFED1C24h
-			je Color1
-			mov eax, [esi]
-			mov[edi], eax
-
-
-			Color1 :
-		add edi, BPP
-			loop mostrar
-
-			mov eax, ANCHO_VENTANA
-			mul BPP
-
-			add edi, eax
-			MOV EAX, h
-			MUL BPP
-			SUB EDI, EAX
-			
-			add total, 4
-			mov esi, total
-
-			pop ecx
-
-			loop repite
-
-
-
-	}
-	}
-	else if (indiPelota == 2) {
-		indiPelota++;
-		__asm
-		{
-			cld
-
-			mov esi, pelota
-			mov edi, buffer
-
-			mov eax, posX
-			mul BPP
-			add edi, eax
-			mov eax, ANCHO_VENTANA
-			mul BPP
-			mul posY
-			add edi, eax
-
-			mov eax, w
-			mul BPP
-			mul h
-			sub eax, BPP
-			add esi, eax
-
-			xor ecx, ecx
-			mov ecx, h
-
-			repite3 :
-
-			push ecx
-				mov ecx, w
-
-
-				mostrar3 :
-			
-				mov eax, [esi]
-				cmp eax, 0FFED1C24h
-				je Color3
-				
-				mov[edi], eax
-
-
-				Color3 :
-
-				sub esi, BPP
-				add edi, BPP
-
-
-				loop mostrar3
-
-				mov eax, ANCHO_VENTANA
-				mul BPP
-
-				add edi, eax
-				MOV EAX, 80
-				MUL BPP
-				SUB EDI, EAX
-
-				pop ecx
-
-				loop repite3
-
-		}
-	}
-	else if (indiPelota == 3) {
-		indiPelota = 0;
-		__asm {
-			cld
-
-			mov esi, pelota
-			mov edi, buffer
-
-			
-			mov eax, w
-			mul BPP
-			mul h
-			mov total2, eax
-			sub esi, BPP
-			mov total2, esi
-
-			mov eax, posX
-			mul BPP
-			add edi, eax
-			mov eax, ANCHO_VENTANA
-			mul BPP
-			mul posY
-			add edi, eax
-
-			xor ecx, ecx
-			mov ecx, w
-
-
-			repite4 :
-
-			push ecx
-				mov ecx, h
-
-
-				mostrar4 :
-
-			mov eax, w
-				mul BPP
-				add esi, eax
-				cmp[esi], 0FFED1C24h
-				je Color4
-				
-				mov eax, [esi]
-				mov[edi], eax
-
-
-				Color4 :
-			add edi, BPP
-				loop mostrar4
-
-				mov eax, ANCHO_VENTANA
-				mul BPP
-
-				add edi, eax
-				MOV EAX, h
-				MUL BPP
-				SUB EDI, EAX
-
-				sub total2, 4
-				mov esi, total2
-
-				pop ecx
-
-				loop repite4
-
-
-
-		}
-	}
 }
 
 #pragma endregion
