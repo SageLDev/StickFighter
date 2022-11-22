@@ -21,7 +21,7 @@ const int BPP = 4;
 
 /* Variable constante que define el intervalo del contador o timer en milisegundos, 
 	con cada TICK del contador se ejecuta el codigo dentro del case WM_TIMER en la funcion WndProc */
-const int TICK = 90;
+const int TICK = 100;
 
 /* Variables constantes de los colores primarios de un pixel de 32 bits */
 const unsigned int BLUE = 0xFF0000FF;
@@ -66,10 +66,36 @@ unsigned char * ptrBack;
 unsigned char * ptrPersonaje1;
 unsigned char * ptrPersonaje2;
 unsigned char * ptrHud;
-DIMENSION dmnBack, dmnPersonaje1, dmnPersonaje2, dmnHud;
+unsigned char* ptrVida1;
+unsigned char* ptrVida2;
+unsigned char* ptrMenu;
+unsigned char* ptrP2Win;
+unsigned char* ptrP1Win;
+unsigned char* ptrM1;
+unsigned char* ptrM2;
+unsigned char* ptrC1;
+unsigned char* ptrC2;
+unsigned char* ptrD1;
+unsigned char* ptrD2;
+unsigned char* ptrU1;
+unsigned char* ptrU2;
+DIMENSION dmnBack, dmnPersonaje1, dmnPersonaje2, dmnHud, dmnVida1, dmnVida2, dmnMenu, dmnP2Win, dmnP1Win, dmnM1, dmnM2, dmnC1, dmnC2, dmnD1, dmnD2, dmnU1, dmnU2;
 POSITION posPer1;
 POSITION posPer2;
 POSITION posHud;
+POSITION posVida1;
+POSITION posVida2;
+POSITION posMenu;
+POSITION posP2Win;
+POSITION posP1Win;
+POSITION posM1;
+POSITION posM2;
+POSITION posC1;
+POSITION posC2;
+POSITION posD1;
+POSITION posD2;
+POSITION posU1;
+POSITION posU2;
 int indiPersonaje1 = 1;
 int indiPersonaje2 = 1;
 int initfondo;
@@ -83,14 +109,71 @@ bool mirror2;
 int start;
 int scale = 7;
 
+bool sePuedeMover1 = true;
+bool sePuedeMover2 = true;
 
+int framesAtaque1 = 0;
+int framesAtaque2 = 0;
 
+int framesAux1 = 0;
+int framesAux2 = 0;
+
+bool estaAtacando1 = false;
+bool estaAtacando2 = false;
+
+int ataqueAdelanto1 = 0;
+int ataqueAdelanto2 = 0;
+
+int rango1 = 0;
+int rango2 = 0;
+
+int recovery1 = 0;
+int recovery2 = 0;
+
+int framesStagger1 = 0;
+int framesStagger2 = 0;
+
+bool estaStagger1 = false;
+bool estaStagger2 = false;
+
+bool estaBloqueando1 = false;
+bool estaBloqueando2 = false;
+
+bool estaEnRecovery1 = false;
+bool estaEnRecovery2 = false;
+
+int dano1 = 0;
+int dano2 = 0;
+
+int puntosAtaque1 = 0;
+int puntosAtaque2 = 0;
+
+int puntuacionTotal1 = 0;
+int puntuacionTotal2 = 0;
+
+int vida1 = 500;
+int vida2 = 500;
+
+bool fueGolpeado1 = false;
+bool fueGolpeado2 = false;
+
+bool invulnerable1 = false;
+bool invulnerable2 = false;
+
+bool gameOver = false;
+bool gameStart = false;
+
+bool player1win = false;
+bool player2win = false;
+
+int m1, c1, d1, u1,m2, c2, d2, u2;
 
 
 //Declaracion de funciones
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void MainRender(HWND hWnd);
 void Init();
+void Score();
 void KeysEvents();
 unsigned char * CargaImagen(WCHAR rutaImagen[], DIMENSION * dmn);
 POSITION setPosition(int x, int y);
@@ -98,6 +181,19 @@ void DibujaFondo(int *buffer, int *imagen, DIMENSION dmn, int incremento);
 void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn1, POSITION pos1);
 void DibujaPersonaje2(int* buffer, int* personaje, DIMENSION dmn1, POSITION pos1);
 void DibujaInterfaz(int *buffer, int *hud, DIMENSION dmn4, POSITION pos4);
+void DibujaBarraDeVida1(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void DibujaBarraDeVida2(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void DibujarPantallaInicial(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void P2Win(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void P1Win(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void DibujarMiles1(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void DibujarCentenas1(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void DibujarDecenas1(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void DibujarUnidades1(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void DibujarMiles2(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void DibujarCentenas2(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void DibujarDecenas2(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
+void DibujarUnidades2(int* buffer, int* hud, DIMENSION dmn4, POSITION pos4);
 
 int WINAPI wWinMain(HINSTANCE hInstance, 
 					 HINSTANCE hPrevInstance, 
@@ -248,6 +344,45 @@ void Init()
 	posHud.X = 25;
 	posHud.Y = 50;
 
+	posVida1.X = 50;
+	posVida1.Y = 79;
+
+	posVida2.X = 700;
+	posVida2.Y = 79;
+
+	posMenu.X = 1;
+	posMenu.Y =-200;
+
+	posP2Win.X = 1;
+	posP2Win.Y = 150;
+	posP1Win.X = 1;
+	posP1Win.Y = 150;
+
+	posM1.X = 140;
+	posM1.Y = 10;
+
+	posC1.X = 100;
+	posC1.Y = 10;
+
+	posD1.X = 60;
+	posD1.Y = 10;
+
+	posU1.X = 20;
+	posU1.Y = 10;
+
+	posM2.X = 1020;
+	posM2.Y = 10;
+
+	posC2.X = 1100;
+	posC2.Y = 10;	
+
+	posD2.X = 1060;
+	posD2.Y = 10;
+
+	posU2.X = 1140;
+	posU2.Y = 10;
+
+
 	for(int i = 0; i < 256; i++)
 	{
 		KEYS[i] = false;
@@ -259,9 +394,22 @@ void Init()
 	//Inicializar el puntero tipo unsigned char 'ptrBack' que contiene la direccion inicial en memoria del arreglo de pixeles de la imagen especificada en el primer parametro
 	//y en la variable dmnBack de tipo DIMENSION* estan los valores de ANCHO y ALTO de la imagen.
 	ptrBack = CargaImagen(TEXT("./Stages/stage_roof.png"), &dmnBack); //puntero a la imagen
-	ptrPersonaje1 = CargaImagen(TEXT("./Animations/idle.png"), &dmnPersonaje1); 
-	ptrPersonaje2 = CargaImagen(TEXT("./Animations/idle.png"), &dmnPersonaje2); //puntero a mi personaje sprite
+	ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_forward.png"), &dmnPersonaje1); 
+	ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_forward.png"), &dmnPersonaje2); //puntero a mi personaje sprite
 	ptrHud = CargaImagen(TEXT("./HUD/hud_life.png"), &dmnHud);
+	ptrVida1 = CargaImagen(TEXT("./HUD/hud_life_bar.png"), &dmnVida1);
+	ptrVida2 = CargaImagen(TEXT("./HUD/hud_life_bar.png"), &dmnVida2);
+	ptrMenu = CargaImagen(TEXT("./HUD/menu.png"), &dmnMenu);
+	ptrP2Win = CargaImagen(TEXT("./HUD/victoria2.png"), &dmnP2Win);
+	ptrP1Win = CargaImagen(TEXT("./HUD/victoria1.png"), &dmnP1Win);
+	ptrM1 = CargaImagen(TEXT("./HUD/0.png"), &dmnM1);
+	ptrM2 = CargaImagen(TEXT("./HUD/0.png"), &dmnM2);
+	ptrC1 = CargaImagen(TEXT("./HUD/0.png"), &dmnC1);
+	ptrC2 = CargaImagen(TEXT("./HUD/0.png"), &dmnC2);
+	ptrD1 = CargaImagen(TEXT("./HUD/0.png"), &dmnD1);
+	ptrD2 = CargaImagen(TEXT("./HUD/0.png"), &dmnD2);
+	ptrU1 = CargaImagen(TEXT("./HUD/0.png"), &dmnU1);
+	ptrU2 = CargaImagen(TEXT("./HUD/0.png"), &dmnU2);
 }
 
 /* Funcion principal. Encargada de hacer el redibujado en pantalla cada intervalo (o "tick") del timer que se haya creado.
@@ -270,15 +418,49 @@ void Init()
 void MainRender(HWND hWnd) 
 {
 	KeysEvents();
+	
+	DibujaFondo(ptrBuffer, (int*)ptrBack, dmnBack, increfondo);
+	Score();
+	if (player2win == true) {
+		P2Win(ptrBuffer, (int*)ptrP2Win, dmnP2Win, posP2Win);
+	} 
 
-	DibujaFondo(ptrBuffer, (int*)ptrBack, dmnBack, increfondo);   //recibe lo de incremento
+	if (player1win == true) {
+		P1Win(ptrBuffer, (int*)ptrP1Win, dmnP1Win, posP1Win);
+	}
 
-	DibujaPersonaje(ptrBuffer, (int*)ptrPersonaje1, dmnPersonaje1,posPer1);
+	if (gameStart && !gameOver) {
 
-	DibujaPersonaje2(ptrBuffer, (int*)ptrPersonaje2, dmnPersonaje2, posPer2);
+		DibujaInterfaz(ptrBuffer, (int*)ptrHud, dmnHud, posHud);
 
-	DibujaInterfaz(ptrBuffer, (int*)ptrHud, dmnHud, posHud);
+		DibujaBarraDeVida1(ptrBuffer, (int*)ptrVida1, dmnVida1, posVida1);
 
+		DibujaBarraDeVida2(ptrBuffer, (int*)ptrVida2, dmnVida2, posVida2);
+	}
+
+	if (gameStart || gameOver) {
+
+		DibujarMiles1(ptrBuffer, (int*)ptrM1, dmnM1, posM1);
+		DibujarCentenas1(ptrBuffer, (int*)ptrC1, dmnC1, posC1);
+		DibujarDecenas1(ptrBuffer, (int*)ptrD1, dmnD1, posD1);
+		DibujarUnidades1(ptrBuffer, (int*)ptrU1, dmnU1, posU1);
+
+		DibujarMiles2(ptrBuffer, (int*)ptrM2, dmnM2, posM2);
+		DibujarCentenas2(ptrBuffer, (int*)ptrC2, dmnC2, posC2);
+		DibujarDecenas2(ptrBuffer, (int*)ptrD2, dmnD2, posD2);
+		DibujarUnidades2(ptrBuffer, (int*)ptrU2, dmnU2, posU2);
+
+		DibujaPersonaje(ptrBuffer, (int*)ptrPersonaje1, dmnPersonaje1, posPer1);
+
+		DibujaPersonaje2(ptrBuffer, (int*)ptrPersonaje2, dmnPersonaje2, posPer2);
+	}
+
+	if (!gameStart || gameOver) {
+		DibujarPantallaInicial(ptrBuffer, (int*)ptrMenu, dmnMenu, posMenu);
+	}
+	
+
+	
 
 	//Funciones que deberan estar el final de la funcion de Render.
 	InvalidateRect(hWnd, NULL, FALSE);
@@ -300,110 +482,437 @@ POSITION setPosition(int x, int y) {
 	*/
 void KeysEvents() 
 {
-	if(KEYS[input.W]) {
-		//ptrBack += 1;
-	}
-	if (KEYS[input.Q]) {
-		scale++;
-		scale = scale >= 4 ? 1 : scale;
-	}
 
-	if (KEYS[input.D] == false && KEYS[input.A] == false) {
+	if (KEYS[input.Backspace]) {
+		if (gameOver || !gameStart) {
 
-		ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_idle.png"), &dmnPersonaje1);
-		mirror1 = FALSE;
-		indiPersonaje1++;
-		indiPersonaje1 = indiPersonaje1 >= 5 ? 0 : indiPersonaje1;
-		
-	}
+			posPer1.X = 426;
+			posPer1.Y = 115;
 
-	if(KEYS[input.D]) {
-		ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_forward.png"), &dmnPersonaje1);
-		mirror1 = FALSE;
-		indiPersonaje1++;
-		indiPersonaje1 = indiPersonaje1 >= 6 ? 0 : indiPersonaje1;
-		if (posPer1.X < 1200)   //para que tope en mi ventana de 800 del lado derecho
-		{
-			posPer1.X += 30;
+			posPer2.X = 900;
+			posPer2.Y = 115;
+
+			vida1 = 500;
+			vida2 = 500;
+
+			puntuacionTotal1 = 0;
+			puntuacionTotal2 = 0;
+
+			sePuedeMover1 = true;
+			sePuedeMover2 = true;
+
+			player1win = false;
+			player2win = false;
+			
+			gameOver = false;
+			gameStart = true;
 		}
-		else
-		{
-			if (increfondo < 100)  //para que tope en mi imagen 2048
-			{
-				increfondo += 10;  //velocidad en que avanza
+	}
+
+	if ((KEYS[input.A] || KEYS[input.D]) && KEYS[input.Space]) {
+
+		if (sePuedeMover1 == true) {
+			indiPersonaje1 = 0;
+			sePuedeMover1 = false;
+			estaAtacando1 = true;
+			ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_ataque_1.png"), &dmnPersonaje1);
+			mirror1 = false;
+			framesAtaque1 = 5;
+			ataqueAdelanto1 = 10;
+			rango1 = 140;
+			recovery1 = 2;
+			dano1 = 51;
+			puntosAtaque1 = 100;
+		}
+	}
+	else if (KEYS[input.Space]) {
+		if (sePuedeMover1 == true) {
+			indiPersonaje1 = 0;
+			sePuedeMover1 = false;
+			estaAtacando1 = true;
+			ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_ataque_0.png"), &dmnPersonaje1);
+			mirror1 = false;
+			framesAtaque1 = 5;
+			ataqueAdelanto1 = 20;
+			rango1 = 180;
+			recovery1 = 5;
+			dano1 = 101;
+			puntosAtaque1 = 300;
+		}
+	}
+
+	if (estaAtacando1) {
+		indiPersonaje1++;
+		indiPersonaje1 = indiPersonaje1 >= framesAtaque1 ? 0 : indiPersonaje1;
+		framesAux1++;
+		posPer1.X += ataqueAdelanto1;
+
+		if ((posPer1.X + rango1) > posPer2.X) {
+			indiPersonaje2 = 0;
+  			if (estaBloqueando2 == true) {
+				if (!invulnerable2) {
+					sePuedeMover2 = false;
+					estaStagger2 = true;
+					posPer2.X += 30;
+					posPer1.X -= 20;
+				}
+				
+			}
+			else {
+				if (!invulnerable2) {
+					sePuedeMover2 = false;
+					fueGolpeado2 = true;
+					posPer2.X += 30;
+					posPer1.X -= 30;
+				}	
 			}
 		}
+
+		if (framesAux1 == framesAtaque1) {
+			estaAtacando1 = false;
+			estaEnRecovery1 = true;
+			framesAux1 = 0;
+		}
+
+
 	}
+
+	if (estaEnRecovery1) {
+
+		framesAux1++;
+		if (framesAux1 == recovery1) {
+			sePuedeMover1 = true;
+			estaEnRecovery1 = false;
+			framesAux1 = 0;
+			ataqueAdelanto1 = 0;
+			rango1 = 0;
+			recovery1 = 0;
+			dano1 = 0;
+			puntosAtaque1 = 0;
+		}
+
 	
-	if(KEYS[input.A]) {
-		ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_backwards.png"), &dmnPersonaje1);
-		mirror1 = FALSE;
+	}
+
+	if (estaStagger1) {
+
+		ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_block.png"), &dmnPersonaje1);
+		mirror1 = false;
 		indiPersonaje1++;
-		indiPersonaje1 = indiPersonaje1 >= 6 ? 0 : indiPersonaje1;
-		if (posPer1.X > 150)  //para que tope en mi ventana de 800 del lado izquierdo
-		{
-			posPer1.X -= 30;
-		}
-		else
-		{
-			if (increfondo > 10)  //para que tope en mi imagen 2048
-			{
-				increfondo -= 10;  //velocidad que se regresa
-			}
+		indiPersonaje1 = indiPersonaje1 >= 2 ? 0 : indiPersonaje1;
+		invulnerable1 = true;
+		framesAux1++;
+
+		if (framesAux1 == 7) {
+
+			sePuedeMover1 = true;
+			estaStagger1 = false;
+			invulnerable1 = false;
+			framesAux1 = 0;
 		}
 	}
+
+	if (fueGolpeado1) {
+
+		if (vida1 > 0) {
+			ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_damage.png"), &dmnPersonaje1);
+			mirror1 = false;
+			indiPersonaje1++;
+			indiPersonaje1 = indiPersonaje1 >= 4 ? 0 : indiPersonaje1;
+			framesAux1++;
+			invulnerable1 = true;
+
+			if (framesAux1 == 7) {
+				vida1 -= dano2;
+				puntuacionTotal2 += puntosAtaque2;
+				sePuedeMover1 = true;
+				fueGolpeado1 = false;
+				invulnerable1 = false;
+				framesAux1 = 0;
+			}
+		}
+		else if (vida1 <= 0) {
+			sePuedeMover1 = false;
+			sePuedeMover2 = false;
+			ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_dead.png"), &dmnPersonaje1);
+			mirror1 = false;
+			indiPersonaje1++;
+			framesAux1++;
+
+			if (indiPersonaje1 == 7) {
+				fueGolpeado1 = false;
+				gameOver = true;
+				framesAux1 = 0;
+				player2win = true;
+			}
+
+		}
+
+
+	}
+
+	if (sePuedeMover1) {
+		
+		if (KEYS[input.D] == false && KEYS[input.A] == false) {
+
+			ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_idle.png"), &dmnPersonaje1);
+			mirror1 = FALSE;
+			indiPersonaje1++;
+			indiPersonaje1 = indiPersonaje1 >= 5 ? 0 : indiPersonaje1;
+
+		}
+
+		if (KEYS[input.D]) {
+			ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_forward.png"), &dmnPersonaje1);
+			mirror1 = FALSE;
+			indiPersonaje1++;
+			indiPersonaje1 = indiPersonaje1 >= 6 ? 0 : indiPersonaje1;
+			if (posPer1.X < 1200)   //para que tope en mi ventana de 800 del lado derecho
+			{
+				posPer1.X += 30;
+			}
+			else
+			{
+				if (increfondo < 100)  //para que tope en mi imagen 2048
+				{
+					increfondo += 10;  //velocidad en que avanza
+				}
+			}
+		}
+
+		if (KEYS[input.A]) {
+			ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_backwards.png"), &dmnPersonaje1);
+			mirror1 = FALSE;
+			indiPersonaje1++;
+			indiPersonaje1 = indiPersonaje1 >= 6 ? 0 : indiPersonaje1;
+			estaBloqueando1 = true;
+			if (posPer1.X > 150)  //para que tope en mi ventana de 800 del lado izquierdo
+			{
+				posPer1.X -= 30;
+			}
+			else
+			{
+				if (increfondo > 10)  //para que tope en mi imagen 2048
+				{
+					increfondo -= 10;  //velocidad que se regresa
+				}
+			}
+		}
+
+		if (GetAsyncKeyState('A') == 0 && estaBloqueando1 == true)
+		{
+			estaBloqueando1 = false;
+		}
+	}
+
+	
 
 	//Player 2
 	
+	if ((KEYS[input.Right] || KEYS[input.Left]) && KEYS[input.Enter]) {
 
-
-
-	if (KEYS[input.Right] == false && KEYS[input.Left] == false) {
-
-		ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_idle.png"), &dmnPersonaje2);
-		mirror2 = TRUE;
-		indiPersonaje2++;
-		indiPersonaje2 = indiPersonaje2 >= 5 ? 0 : indiPersonaje2;
-
+		if (sePuedeMover2 == true) {
+			indiPersonaje2 = 0;
+			sePuedeMover2 = false;
+			estaAtacando2 = true;
+			ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_ataque_1.png"), &dmnPersonaje2);
+			mirror2 = true;
+			framesAtaque2 = 5;
+			ataqueAdelanto2 = 10;
+			rango2 = 140;
+			recovery2 = 2;
+			dano2 = 51;
+			puntosAtaque2 = 100;
+		}
+	}
+	else if (KEYS[input.Enter]) {
+		if (sePuedeMover2 == true) {
+			indiPersonaje2 = 0;
+			sePuedeMover2 = false;
+			estaAtacando2 = true;
+			ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_ataque_0.png"), &dmnPersonaje2);
+			mirror2 = true;
+			framesAtaque2 = 5;
+			ataqueAdelanto2 = 20;
+			rango2 = 180;
+			recovery2 = 5;
+			dano2 = 101;
+			puntosAtaque2 = 300;
+		}
 	}
 
-	if (KEYS[input.Right]) {
-
-		ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_backwards.png"), &dmnPersonaje2);
-		mirror2 = TRUE;
+	if (estaAtacando2) {
 		indiPersonaje2++;
-		indiPersonaje2 = indiPersonaje2 >= 6 ? 0 : indiPersonaje2;
-		if (posPer2.X < 1200)   //para que tope en mi ventana de 800 del lado derecho
-		{
-			posPer2.X += 30;
-		}
-		else
-		{
-			if (increfondo < 100)  //para que tope en mi imagen 2048
-			{
-				increfondo += 10;  //velocidad en que avanza
+		indiPersonaje2 = indiPersonaje2 >= framesAtaque2 ? 0 : indiPersonaje2;
+		framesAux2++;
+		posPer2.X -= ataqueAdelanto2;
+
+		if ((posPer2.X - rango2) < posPer1.X) {
+			indiPersonaje1 = 0;
+			if (estaBloqueando1 == true) {
+				if (!invulnerable1) {
+					sePuedeMover1 = false;
+					estaStagger1 = true;
+					posPer1.X += 30;
+					posPer2.X -= 20;
+				}
+
+			}
+			else {
+				if (!invulnerable1) {
+					sePuedeMover1 = false;
+					fueGolpeado1 = true;
+					posPer1.X += 30;
+					posPer2.X -= 30;
+				}
 			}
 		}
+
+		if (framesAux2 == framesAtaque2) {
+			estaAtacando2 = false;
+			estaEnRecovery2 = true;
+			framesAux2 = 0;
+		}
+
+
 	}
 
+	if (estaEnRecovery2) {
 
-	if (KEYS[input.Left]) {
-		ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_forward.png"), &dmnPersonaje2);
+		framesAux2++;
+		if (framesAux2 == recovery2) {
+			sePuedeMover2 = true;
+			estaEnRecovery2 = false;
+			framesAux2 = 0;
+			ataqueAdelanto2 = 0;
+			rango2 = 0;
+			recovery2 = 0;
+			dano2 = 0;
+			puntosAtaque2 = 0;
+		}
+
+
+	}
+
+	if (estaStagger2) {
+		
+		ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_block.png"), &dmnPersonaje2);
 		mirror2 = TRUE;
 		indiPersonaje2++;
-		indiPersonaje2 = indiPersonaje2 >= 6 ? 0 : indiPersonaje2;
-		if (posPer2.X > 150)  //para que tope en mi ventana de 800 del lado izquierdo
-		{
-			posPer2.X -= 30;
-		}
-		else
-		{
-			if (increfondo > 10)  //para que tope en mi imagen 2048
-			{
-				increfondo -= 10;  //velocidad que se regresa
-			}
+		indiPersonaje2 = indiPersonaje2 >= 2 ? 0 : indiPersonaje2;
+		invulnerable2 = true;
+		framesAux2++;
+
+		if (framesAux2 == 7) {
+
+			sePuedeMover2 = true;
+			estaStagger2 = false;
+			invulnerable2 = false;
+			framesAux2 = 0;
 		}
 	}
+
+	if (fueGolpeado2) {
+		
+		if (vida2 > 0) {			
+			ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_damage.png"), &dmnPersonaje2);
+			mirror2 = TRUE;
+			indiPersonaje2++;
+			indiPersonaje2 = indiPersonaje2 >= 4 ? 0 : indiPersonaje2;
+			framesAux2++;
+			invulnerable2 = true;
+
+			if (framesAux2 == 7) {
+				vida2 -= dano1;
+				puntuacionTotal1 += puntosAtaque1;
+				sePuedeMover2 = true;
+				fueGolpeado2 = false;
+				invulnerable2 = false;
+				framesAux2 = 0;
+			}
+		}
+		else if (vida2 <= 0) {
+			sePuedeMover1 = false;
+			sePuedeMover2 = false;
+			ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_dead.png"), &dmnPersonaje2);
+			mirror2 = TRUE;
+			indiPersonaje2++;
+			framesAux2++;
+
+			if (indiPersonaje2 == 8) {
+				fueGolpeado2 = false;
+				gameOver = true;
+				framesAux2 = 0;
+				player1win = true;
+			}
+
+		}
+
+		
+	}
+
+	if (sePuedeMover2 == true) {
+
+
+
+		if (KEYS[input.Right] == false && KEYS[input.Left] == false) {
+
+			ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_idle.png"), &dmnPersonaje2);
+			mirror2 = TRUE;
+			indiPersonaje2++;
+			indiPersonaje2 = indiPersonaje2 >= 5 ? 0 : indiPersonaje2;
+
+		} 
+
+		if (KEYS[input.Right]) {
+			estaBloqueando2 = true;
+			ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_backwards.png"), &dmnPersonaje2);
+			mirror2 = TRUE;
+			indiPersonaje2++;
+			indiPersonaje2 = indiPersonaje2 >= 6 ? 0 : indiPersonaje2;
+			if (posPer2.X < 1200)   //para que tope en mi ventana de 800 del lado derecho
+			{
+				posPer2.X += 30;
+			}
+			else
+			{
+				if (increfondo < 100)  //para que tope en mi imagen 2048
+				{
+					increfondo += 10;  //velocidad en que avanza
+				}
+			}
+		}
+		if (GetAsyncKeyState(VK_RIGHT) == 0 && estaBloqueando2 == true)
+		{
+			estaBloqueando2 = false;
+		}
+
+		if (KEYS[input.Left]) {
+
+			
+			ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_forward.png"), &dmnPersonaje2);
+			mirror2 = TRUE;
+			indiPersonaje2++;
+			indiPersonaje2 = indiPersonaje2 >= 6 ? 0 : indiPersonaje2;
+			if (posPer2.X > 150)  //para que tope en mi ventana de 800 del lado izquierdo
+			{
+				posPer2.X -= 30;
+			}
+			else
+			{
+				if (increfondo > 10)  //para que tope en mi imagen 2048
+				{
+					increfondo -= 10;  //velocidad que se regresa
+				}
+			}
+		}
+
+
+	}
+
+
+
+
 
 }
 
@@ -601,6 +1110,378 @@ void DibujaInterfaz(int* buffer, int* hud, DIMENSION dmn, POSITION pos)
 			loop repite2
 	}
 
+}
+
+void DibujaBarraDeVida1(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	if (w > 0) {
+		w = vida1;
+	}
+	if (w <= 0) {
+		w = 1;
+	}
+
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+}
+
+void DibujaBarraDeVida2(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+
+	int w = dmn.ANCHO;
+	if (w > 0) {
+		w = vida2;
+	}
+	if(w <= 0) {
+		w = 1;
+	}
+
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+}
+
+void DibujarPantallaInicial(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+}
+
+void P1Win(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+}
+
+
+
+void P2Win(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
 }
 
 void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
@@ -913,6 +1794,885 @@ void DibujaPersonaje2(int* buffer, int* personaje, DIMENSION dmn, POSITION pos)
 		}
 	}
 
+}
+
+void Score() {
+
+	u1 = puntuacionTotal1 % 10;
+	c1 = (puntuacionTotal1 / 10) % 10;
+	d1 = (puntuacionTotal1 / 100) % 10;
+	m1 = puntuacionTotal1 / 1000;
+	
+	u2 = puntuacionTotal2 % 10;
+	c2 = (puntuacionTotal2 / 10) % 10;
+	d2 = (puntuacionTotal2 / 100) % 10;
+	m2 = puntuacionTotal2 / 1000;
+
+
+	switch (u1)
+	{
+	case 0:
+		ptrU1 = CargaImagen(TEXT("./HUD/0.png"), &dmnU1);
+		break;
+	case 1:
+		ptrU1 = CargaImagen(TEXT("./HUD/1.png"), &dmnU1);
+		break;
+	case 2:
+		ptrU1 = CargaImagen(TEXT("./HUD/2.png"), &dmnU1);
+		break;
+	case 3:
+		ptrU1 = CargaImagen(TEXT("./HUD/3.png"), &dmnU1);
+		break;
+	case 4:
+		ptrU1 = CargaImagen(TEXT("./HUD/4.png"), &dmnU1);
+		break;
+	case 5:
+		ptrU1 = CargaImagen(TEXT("./HUD/5.png"), &dmnU1);
+		break;
+	case 6:
+		ptrU1 = CargaImagen(TEXT("./HUD/6.png"), &dmnU1);
+		break;
+	case 7:
+		ptrU1 = CargaImagen(TEXT("./HUD/7.png"), &dmnU1);
+		break;
+	case 8:
+		ptrU1 = CargaImagen(TEXT("./HUD/8.png"), &dmnU1);
+		break;
+	case 9:
+		ptrU1 = CargaImagen(TEXT("./HUD/9.png"), &dmnU1);
+		break;
+	default:
+		ptrU1 = CargaImagen(TEXT("./HUD/0.png"), &dmnU1);
+		break;
+	}
+
+	switch (u2)
+	{
+	case 0:
+		ptrU2 = CargaImagen(TEXT("./HUD/0.png"), &dmnU2);
+		break;
+	case 1:
+		ptrU2 = CargaImagen(TEXT("./HUD/1.png"), &dmnU2);
+		break;
+	case 2:
+		ptrU2 = CargaImagen(TEXT("./HUD/2.png"), &dmnU2);
+		break;
+	case 3:
+		ptrU2 = CargaImagen(TEXT("./HUD/3.png"), &dmnU2);
+		break;
+	case 4:
+		ptrU2 = CargaImagen(TEXT("./HUD/4.png"), &dmnU2);
+		break;
+	case 5:
+		ptrU2 = CargaImagen(TEXT("./HUD/5.png"), &dmnU2);
+		break;
+	case 6:
+		ptrU2 = CargaImagen(TEXT("./HUD/6.png"), &dmnU2);
+		break;
+	case 7:
+		ptrU2 = CargaImagen(TEXT("./HUD/7.png"), &dmnU2);
+		break;
+	case 8:
+		ptrU2 = CargaImagen(TEXT("./HUD/8.png"), &dmnU2);
+		break;
+	case 9:
+		ptrU2 = CargaImagen(TEXT("./HUD/9.png"), &dmnU2);
+		break;
+	default:
+		ptrU2 = CargaImagen(TEXT("./HUD/0.png"), &dmnU2);
+		break;
+	}
+
+	switch (d1)
+	{
+	case 0:
+		ptrD1 = CargaImagen(TEXT("./HUD/0.png"), &dmnD1);
+		break;
+	case 1:
+		ptrD1 = CargaImagen(TEXT("./HUD/1.png"), &dmnD1);
+		break;
+	case 2:
+		ptrD1 = CargaImagen(TEXT("./HUD/2.png"), &dmnD1);
+		break;
+	case 3:
+		ptrD1 = CargaImagen(TEXT("./HUD/3.png"), &dmnD1);
+		break;
+	case 4:
+		ptrD1 = CargaImagen(TEXT("./HUD/4.png"), &dmnD1);
+		break;
+	case 5:
+		ptrD1 = CargaImagen(TEXT("./HUD/5.png"), &dmnD1);
+		break;
+	case 6:
+		ptrD1 = CargaImagen(TEXT("./HUD/6.png"), &dmnD1);
+		break;
+	case 7:
+		ptrD1 = CargaImagen(TEXT("./HUD/7.png"), &dmnD1);
+		break;
+	case 8:
+		ptrD1 = CargaImagen(TEXT("./HUD/8.png"), &dmnD1);
+		break;
+	case 9:
+		ptrD1 = CargaImagen(TEXT("./HUD/9.png"), &dmnD1);
+		break;
+	default:
+		ptrD1 = CargaImagen(TEXT("./HUD/0.png"), &dmnD1);
+		break;
+	}
+
+	switch (d2)
+	{
+	case 0:
+		ptrD2 = CargaImagen(TEXT("./HUD/0.png"), &dmnD2);
+		break;
+	case 1:
+		ptrD2 = CargaImagen(TEXT("./HUD/1.png"), &dmnD2);
+		break;
+	case 2:
+		ptrD2 = CargaImagen(TEXT("./HUD/2.png"), &dmnD2);
+		break;
+	case 3:
+		ptrD2 = CargaImagen(TEXT("./HUD/3.png"), &dmnD2);
+		break;
+	case 4:
+		ptrD2 = CargaImagen(TEXT("./HUD/4.png"), &dmnD2);
+		break;
+	case 5:
+		ptrD2 = CargaImagen(TEXT("./HUD/5.png"), &dmnD2);
+		break;
+	case 6:
+		ptrD2 = CargaImagen(TEXT("./HUD/6.png"), &dmnD2);
+		break;
+	case 7:
+		ptrD2 = CargaImagen(TEXT("./HUD/7.png"), &dmnD2);
+		break;
+	case 8:
+		ptrD2 = CargaImagen(TEXT("./HUD/8.png"), &dmnD2);
+		break;
+	case 9:
+		ptrD2 = CargaImagen(TEXT("./HUD/9.png"), &dmnD2);
+		break;
+	default:
+		ptrD2 = CargaImagen(TEXT("./HUD/0.png"), &dmnD2);
+		break;
+	}
+
+	switch (c1)
+	{
+	case 0:
+		ptrC1 = CargaImagen(TEXT("./HUD/0.png"), &dmnC1);
+		break;
+	case 1:
+		ptrC1 = CargaImagen(TEXT("./HUD/1.png"), &dmnC1);
+		break;
+	case 2:
+		ptrC1 = CargaImagen(TEXT("./HUD/2.png"), &dmnC1);
+		break;
+	case 3:
+		ptrC1 = CargaImagen(TEXT("./HUD/3.png"), &dmnC1);
+		break;
+	case 4:
+		ptrC1 = CargaImagen(TEXT("./HUD/4.png"), &dmnC1);
+		break;
+	case 5:
+		ptrC1 = CargaImagen(TEXT("./HUD/5.png"), &dmnC1);
+		break;
+	case 6:
+		ptrC1 = CargaImagen(TEXT("./HUD/6.png"), &dmnC1);
+		break;
+	case 7:
+		ptrC1 = CargaImagen(TEXT("./HUD/7.png"), &dmnC1);
+		break;
+	case 8:
+		ptrC1 = CargaImagen(TEXT("./HUD/8.png"), &dmnC1);
+		break;
+	case 9:
+		ptrC1 = CargaImagen(TEXT("./HUD/9.png"), &dmnC1);
+		break;
+	default:
+		ptrC1 = CargaImagen(TEXT("./HUD/0.png"), &dmnC1);
+		break;
+	}
+
+	switch (c2)
+	{
+	case 0:
+		ptrC2 = CargaImagen(TEXT("./HUD/0.png"), &dmnC2);
+		break;
+	case 1:
+		ptrC2 = CargaImagen(TEXT("./HUD/1.png"), &dmnC2);
+		break;
+	case 2:
+		ptrC2 = CargaImagen(TEXT("./HUD/2.png"), &dmnC2);
+		break;
+	case 3:
+		ptrC2 = CargaImagen(TEXT("./HUD/3.png"), &dmnC2);
+		break;
+	case 4:
+		ptrC2 = CargaImagen(TEXT("./HUD/4.png"), &dmnC2);
+		break;
+	case 5:
+		ptrC2 = CargaImagen(TEXT("./HUD/5.png"), &dmnC2);
+		break;
+	case 6:
+		ptrC2 = CargaImagen(TEXT("./HUD/6.png"), &dmnC2);
+		break;
+	case 7:
+		ptrC2 = CargaImagen(TEXT("./HUD/7.png"), &dmnC2);
+		break;
+	case 8:
+		ptrC2 = CargaImagen(TEXT("./HUD/8.png"), &dmnC2);
+		break;
+	case 9:
+		ptrC2 = CargaImagen(TEXT("./HUD/9.png"), &dmnC2);
+		break;
+	default:
+		ptrC2 = CargaImagen(TEXT("./HUD/0.png"), &dmnC2);
+		break;
+	}
+
+	switch (m1)
+	{
+	case 0:
+		ptrM1 = CargaImagen(TEXT("./HUD/0.png"), &dmnM1);
+		break;
+	case 1:
+		ptrM1 = CargaImagen(TEXT("./HUD/1.png"), &dmnM1);
+		break;
+	case 2:
+		ptrM1 = CargaImagen(TEXT("./HUD/2.png"), &dmnM1);
+		break;
+	case 3:
+		ptrM1 = CargaImagen(TEXT("./HUD/3.png"), &dmnM1);
+		break;
+	case 4:
+		ptrM1 = CargaImagen(TEXT("./HUD/4.png"), &dmnM1);
+		break;
+	case 5:
+		ptrM1 = CargaImagen(TEXT("./HUD/5.png"), &dmnM1);
+		break;
+	case 6:
+		ptrM1 = CargaImagen(TEXT("./HUD/6.png"), &dmnM1);
+		break;
+	case 7:
+		ptrM1 = CargaImagen(TEXT("./HUD/7.png"), &dmnM1);
+		break;
+	case 8:
+		ptrM1 = CargaImagen(TEXT("./HUD/8.png"), &dmnM1);
+		break;
+	case 9:
+		ptrM1 = CargaImagen(TEXT("./HUD/9.png"), &dmnM1);
+		break;
+	default:
+		ptrM1 = CargaImagen(TEXT("./HUD/0.png"), &dmnM1);
+		break;
+	}
+
+	switch (m1)
+	{
+	case 0:
+		ptrM2 = CargaImagen(TEXT("./HUD/0.png"), &dmnM2);
+		break;
+	case 1:
+		ptrM2 = CargaImagen(TEXT("./HUD/1.png"), &dmnM2);
+		break;
+	case 2:
+		ptrM2 = CargaImagen(TEXT("./HUD/2.png"), &dmnM2);
+		break;
+	case 3:
+		ptrM2 = CargaImagen(TEXT("./HUD/3.png"), &dmnM2);
+		break;
+	case 4:
+		ptrM2 = CargaImagen(TEXT("./HUD/4.png"), &dmnM2);
+		break;
+	case 5:
+		ptrM2 = CargaImagen(TEXT("./HUD/5.png"), &dmnM2);
+		break;
+	case 6:
+		ptrM2 = CargaImagen(TEXT("./HUD/6.png"), &dmnM2);
+		break;
+	case 7:
+		ptrM2 = CargaImagen(TEXT("./HUD/7.png"), &dmnM2);
+		break;
+	case 8:
+		ptrM2 = CargaImagen(TEXT("./HUD/8.png"), &dmnM2);
+		break;
+	case 9:
+		ptrM2 = CargaImagen(TEXT("./HUD/9.png"), &dmnM2);
+		break;
+	default:
+		ptrM2 = CargaImagen(TEXT("./HUD/0.png"), &dmnM2);
+		break;
+	}
+
+}
+
+void DibujarMiles1(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+}
+
+void DibujarMiles2(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+}
+
+void DibujarCentenas1(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+}
+
+void DibujarCentenas2(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+}
+
+void DibujarDecenas1(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+}
+
+void DibujarDecenas2(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+}
+
+void DibujarUnidades1(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
+}
+
+void DibujarUnidades2(int* buffer, int* hud, DIMENSION dmn, POSITION pos) {
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO - 1;
+	int posX = pos.X;
+	int posY = pos.Y;
+
+	__asm
+	{
+		cld
+		mov esi, hud
+		mov edi, buffer
+
+		mov eax, posX
+		mul BPP
+		add edi, eax
+		mov eax, ANCHO_VENTANA
+		mul BPP
+		mul posY
+		add edi, eax
+
+		mov eax, w
+		mul BPP
+		add esi, eax
+
+		xor ecx, ecx
+		mov ecx, h
+
+		repite2 :
+
+		push ecx
+			mov ecx, w
+
+
+			mostrar2 :
+		mov eax, [esi]
+			cmp eax, 0FFFF0000h
+			je Color2
+			mov[edi], eax
+
+
+			Color2 :
+
+		add esi, BPP
+			add edi, BPP
+
+
+			loop mostrar2
+			mov eax, ANCHO_VENTANA
+			mul BPP
+
+			add edi, eax
+			MOV EAX, w
+			MUL BPP
+			SUB EDI, EAX
+
+			mov eax, w
+			mul BPP
+
+			add esi, eax
+			mov eax, w
+			mul BPP
+			sub esi, eax
+
+
+
+			pop ecx
+
+			loop repite2
+	}
 }
 
 #pragma endregion
