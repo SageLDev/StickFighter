@@ -21,7 +21,7 @@ const int BPP = 4;
 
 /* Variable constante que define el intervalo del contador o timer en milisegundos, 
 	con cada TICK del contador se ejecuta el codigo dentro del case WM_TIMER en la funcion WndProc */
-const int TICK = 100;
+const int TICK = 90;
 
 /* Variables constantes de los colores primarios de un pixel de 32 bits */
 const unsigned int BLUE = 0xFF0000FF;
@@ -63,19 +63,23 @@ struct Input
 //Variables Globales
 int *ptrBuffer;
 unsigned char * ptrBack;
-unsigned char * ptrPersonaje;
+unsigned char * ptrPersonaje1;
+unsigned char * ptrPersonaje2;
 unsigned char * ptrHud;
-DIMENSION dmnBack, dmnPersonaje, dmnHud;
-POSITION posPer;
+DIMENSION dmnBack, dmnPersonaje1, dmnPersonaje2, dmnHud;
+POSITION posPer1;
+POSITION posPer2;
 POSITION posHud;
-int indiPersonaje = 1;
+int indiPersonaje1 = 1;
+int indiPersonaje2 = 1;
 int initfondo;
 bool KEYS[256];
 int increfondo = 0;    //que incremente el valor del pixel 
 int contadorsh = 10;
 
 int coloresdif = 0;
-bool mirror;
+bool mirror1;
+bool mirror2;
 int start;
 int scale = 7;
 
@@ -92,6 +96,7 @@ unsigned char * CargaImagen(WCHAR rutaImagen[], DIMENSION * dmn);
 POSITION setPosition(int x, int y);
 void DibujaFondo(int *buffer, int *imagen, DIMENSION dmn, int incremento);
 void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn1, POSITION pos1);
+void DibujaPersonaje2(int* buffer, int* personaje, DIMENSION dmn1, POSITION pos1);
 void DibujaInterfaz(int *buffer, int *hud, DIMENSION dmn4, POSITION pos4);
 
 int WINAPI wWinMain(HINSTANCE hInstance, 
@@ -233,8 +238,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	*/
 void Init() 
 {
-	posPer.X = 305;
-	posPer.Y = 115;
+	posPer1.X = 426;
+	posPer1.Y = 115;
+
+	posPer2.X = 900;
+	posPer2.Y = 115;
 	/*initfondo = 0;*/
 
 	posHud.X = 25;
@@ -251,7 +259,8 @@ void Init()
 	//Inicializar el puntero tipo unsigned char 'ptrBack' que contiene la direccion inicial en memoria del arreglo de pixeles de la imagen especificada en el primer parametro
 	//y en la variable dmnBack de tipo DIMENSION* estan los valores de ANCHO y ALTO de la imagen.
 	ptrBack = CargaImagen(TEXT("./Stages/stage_roof.png"), &dmnBack); //puntero a la imagen
-	ptrPersonaje = CargaImagen(TEXT("./Animations/animation_forward.png"), &dmnPersonaje);   //puntero a mi personaje sprite
+	ptrPersonaje1 = CargaImagen(TEXT("./Animations/idle.png"), &dmnPersonaje1); 
+	ptrPersonaje2 = CargaImagen(TEXT("./Animations/idle.png"), &dmnPersonaje2); //puntero a mi personaje sprite
 	ptrHud = CargaImagen(TEXT("./HUD/hud_life.png"), &dmnHud);
 }
 
@@ -264,9 +273,12 @@ void MainRender(HWND hWnd)
 
 	DibujaFondo(ptrBuffer, (int*)ptrBack, dmnBack, increfondo);   //recibe lo de incremento
 
-	DibujaPersonaje(ptrBuffer, (int*)ptrPersonaje, dmnPersonaje,posPer);
+	DibujaPersonaje(ptrBuffer, (int*)ptrPersonaje1, dmnPersonaje1,posPer1);
+
+	DibujaPersonaje2(ptrBuffer, (int*)ptrPersonaje2, dmnPersonaje2, posPer2);
 
 	DibujaInterfaz(ptrBuffer, (int*)ptrHud, dmnHud, posHud);
+
 
 	//Funciones que deberan estar el final de la funcion de Render.
 	InvalidateRect(hWnd, NULL, FALSE);
@@ -288,7 +300,7 @@ POSITION setPosition(int x, int y) {
 	*/
 void KeysEvents() 
 {
-	if(KEYS[input.W] || KEYS[input.Up]) {
+	if(KEYS[input.W]) {
 		//ptrBack += 1;
 	}
 	if (KEYS[input.Q]) {
@@ -296,14 +308,23 @@ void KeysEvents()
 		scale = scale >= 4 ? 1 : scale;
 	}
 
+	if (KEYS[input.D] == false && KEYS[input.A] == false) {
 
-	if(KEYS[input.D] || KEYS[input.Right]) {
-		mirror = FALSE;
-		indiPersonaje++;
-		indiPersonaje = indiPersonaje >= 6 ? 0 : indiPersonaje;
-		if (posPer.X < 1200)   //para que tope en mi ventana de 800 del lado derecho
+		ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_idle.png"), &dmnPersonaje1);
+		mirror1 = FALSE;
+		indiPersonaje1++;
+		indiPersonaje1 = indiPersonaje1 >= 5 ? 0 : indiPersonaje1;
+		
+	}
+
+	if(KEYS[input.D]) {
+		ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_forward.png"), &dmnPersonaje1);
+		mirror1 = FALSE;
+		indiPersonaje1++;
+		indiPersonaje1 = indiPersonaje1 >= 6 ? 0 : indiPersonaje1;
+		if (posPer1.X < 1200)   //para que tope en mi ventana de 800 del lado derecho
 		{
-			posPer.X += 30;
+			posPer1.X += 30;
 		}
 		else
 		{
@@ -314,13 +335,14 @@ void KeysEvents()
 		}
 	}
 	
-	if(KEYS[input.A] || KEYS[input.Left]) {
-		mirror = TRUE;
-		indiPersonaje++;
-		indiPersonaje = indiPersonaje >= 6 ? 0 : indiPersonaje;
-		if (posPer.X > 150)  //para que tope en mi ventana de 800 del lado izquierdo
+	if(KEYS[input.A]) {
+		ptrPersonaje1 = CargaImagen(TEXT("./Animations/animation_backwards.png"), &dmnPersonaje1);
+		mirror1 = FALSE;
+		indiPersonaje1++;
+		indiPersonaje1 = indiPersonaje1 >= 6 ? 0 : indiPersonaje1;
+		if (posPer1.X > 150)  //para que tope en mi ventana de 800 del lado izquierdo
 		{
-			posPer.X -= 30;
+			posPer1.X -= 30;
 		}
 		else
 		{
@@ -330,21 +352,57 @@ void KeysEvents()
 			}
 		}
 	}
-	if (KEYS[input.R])
-	{
-		coloresdif = RED;
+
+	//Player 2
+	
+
+
+
+	if (KEYS[input.Right] == false && KEYS[input.Left] == false) {
+
+		ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_idle.png"), &dmnPersonaje2);
+		mirror2 = TRUE;
+		indiPersonaje2++;
+		indiPersonaje2 = indiPersonaje2 >= 5 ? 0 : indiPersonaje2;
+
 	}
-	if (KEYS[input.B])
-	{
-		coloresdif = BLUE;
+
+	if (KEYS[input.Right]) {
+
+		ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_backwards.png"), &dmnPersonaje2);
+		mirror2 = TRUE;
+		indiPersonaje2++;
+		indiPersonaje2 = indiPersonaje2 >= 6 ? 0 : indiPersonaje2;
+		if (posPer2.X < 1200)   //para que tope en mi ventana de 800 del lado derecho
+		{
+			posPer2.X += 30;
+		}
+		else
+		{
+			if (increfondo < 100)  //para que tope en mi imagen 2048
+			{
+				increfondo += 10;  //velocidad en que avanza
+			}
+		}
 	}
-	if (KEYS[input.G])
-	{
-		coloresdif = GREEN;
-	}
-	if (KEYS[input.N])
-	{
-		coloresdif = 0;
+
+
+	if (KEYS[input.Left]) {
+		ptrPersonaje2 = CargaImagen(TEXT("./Animations/animation_forward.png"), &dmnPersonaje2);
+		mirror2 = TRUE;
+		indiPersonaje2++;
+		indiPersonaje2 = indiPersonaje2 >= 6 ? 0 : indiPersonaje2;
+		if (posPer2.X > 150)  //para que tope en mi ventana de 800 del lado izquierdo
+		{
+			posPer2.X -= 30;
+		}
+		else
+		{
+			if (increfondo > 10)  //para que tope en mi imagen 2048
+			{
+				increfondo -= 10;  //velocidad que se regresa
+			}
+		}
 	}
 
 }
@@ -549,11 +607,11 @@ void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
 {
 	int w = dmn.ANCHO;
 	int h = dmn.ALTO;
-	int x = posPer.X;
-	int y = posPer.Y;
+	int x = posPer1.X;
+	int y = posPer1.Y;
 
 
-		if (mirror == FALSE)
+		if (mirror1 == FALSE)
 		{
 			__asm{
 				cld
@@ -576,7 +634,7 @@ void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
 
 					mov eax, 48   //porque es la cantidad de pixeles de cada cuadrito
 					mul BPP
-					mul indiPersonaje    //para moverlo con la tecla que asigne, si le pico una ves el 0 default se convierte en uno, de multiplica por 59 y se mueve el sprite
+					mul indiPersonaje1    //para moverlo con la tecla que asigne, si le pico una ves el 0 default se convierte en uno, de multiplica por 59 y se mueve el sprite
 					add esi, eax
 
 					xor ecx, ecx
@@ -649,7 +707,7 @@ void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
 
 				mov eax, 48   //porque es la cantidad de pixeles de cada cuadrito
 				mul BPP
-				mul indiPersonaje    //para moverlo con la tecla que asigne, si le pico una ves el 0 default se convierte en uno, de multiplica por 59 y se mueve el sprite
+				mul indiPersonaje1    //para moverlo con la tecla que asigne, si le pico una ves el 0 default se convierte en uno, de multiplica por 59 y se mueve el sprite
 				add esi, eax
 
 				xor ecx, ecx
@@ -699,6 +757,162 @@ void DibujaPersonaje(int *buffer, int *personaje, DIMENSION dmn, POSITION pos)
 			}
 		}
 	
+}
+
+void DibujaPersonaje2(int* buffer, int* personaje, DIMENSION dmn, POSITION pos)
+{
+	int w = dmn.ANCHO;
+	int h = dmn.ALTO;
+	int x = posPer2.X;
+	int y = posPer2.Y;
+
+
+	if (mirror2 == FALSE)
+	{
+		__asm {
+			cld
+			//cargo el sprite
+			mov esi, personaje
+			mov edi, buffer
+
+			//posicionar mi sprite		
+			mov eax, y
+			mov ebx, 9200
+			mul ebx
+			add edi, eax
+
+			mov eax, x
+			mul BPP
+			add edi, eax
+
+			add edi, 769000
+
+
+			mov eax, 48   //porque es la cantidad de pixeles de cada cuadrito
+			mul BPP
+			mul indiPersonaje2    //para moverlo con la tecla que asigne, si le pico una ves el 0 default se convierte en uno, de multiplica por 59 y se mueve el sprite
+			add esi, eax
+
+			xor ecx, ecx
+			mov ecx, h    //asigno mi altura a ecx
+			ScaladoY :
+			push ecx
+				mov ecx, scale
+				repite :
+			push ecx
+				mov ecx, 48
+				mostrar :
+				mov eax, [esi]         //mi imagen la paso a eax
+				cmp eax, 0FFFF0000h    //comparo lo rojo 
+				je colorro   //si es igual salta a colorro
+				or eax, coloresdif
+				push ecx
+				mov ecx, scale
+				scalax :
+			mov[edi], eax
+				add edi, BPP
+				loop scalax
+				pop ecx
+				jmp Salir
+				colorro :
+			mov eax, BPP
+				mul scale
+				add edi, eax
+				Salir :
+			add esi, BPP
+				loop mostrar
+				mov eax, ANCHO_VENTANA
+				mul BPP
+				add edi, eax
+				MOV EAX, 48
+				MUL BPP
+				sub esi, eax
+				mul scale
+				SUB EDI, EAX
+				pop ecx
+				loop repite
+				mov eax, w
+				mul BPP
+				add esi, eax
+
+				pop ecx
+				loop ScaladoY
+		}
+
+
+	}
+	else {
+		__asm {
+			cld
+			//cargo el sprite
+			mov esi, personaje
+			mov edi, buffer
+
+			//posicionar mi sprite		
+			mov eax, y
+			mov ebx, 9200
+			mul ebx
+			add edi, eax
+
+			mov eax, x
+			mul BPP
+			add edi, eax
+
+			add edi, 769000
+
+
+			mov eax, 48   //porque es la cantidad de pixeles de cada cuadrito
+			mul BPP
+			mul indiPersonaje2    //para moverlo con la tecla que asigne, si le pico una ves el 0 default se convierte en uno, de multiplica por 59 y se mueve el sprite
+			add esi, eax
+
+			xor ecx, ecx
+			mov ecx, h    //asigno mi altura a ecx
+			ScaladoY2 :
+			push ecx
+				mov ecx, scale
+				repite2 :
+			push ecx
+				mov ecx, 48
+				mostrar2 :
+				mov eax, [esi]
+				cmp eax, 0FFFF0000h
+				je Color2
+				or eax, coloresdif
+				push ecx
+				mov ecx, scale
+				scalax2 :
+			mov[edi], eax
+				add edi, BPP
+				loop scalax2
+				pop ecx
+				jmp Salir2
+				Color2 :
+			mov eax, BPP
+				mul scale
+				add edi, eax
+				Salir2 :
+			sub esi, BPP//
+				loop mostrar2
+				mov eax, ANCHO_VENTANA
+				mul BPP
+				add edi, eax
+				MOV EAX, 48
+				MUL BPP
+				add esi, eax
+				mul scale
+				SUB EDI, EAX
+				pop ecx
+				loop repite2
+				mov eax, w
+				mul BPP
+				add esi, eax
+
+				pop ecx
+				loop ScaladoY2
+		}
+	}
+
 }
 
 #pragma endregion
